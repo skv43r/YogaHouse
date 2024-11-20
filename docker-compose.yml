@@ -1,0 +1,17 @@
+networks:
+  dev:
+
+services:
+  bot:
+    build:
+      context: ./app
+    env_file:
+      - ./app/bot/.env
+    networks:
+      - dev
+    volumes:
+      - ./app/bot:/bot
+
+  
+
+    
