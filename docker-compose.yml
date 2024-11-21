@@ -5,13 +5,32 @@ services:
   bot:
     build:
       context: ./app
+    working_dir: /app/bot
     env_file:
       - ./app/bot/.env
+    environment:
+      - PYTHONPATH=/app
     networks:
       - dev
     volumes:
-      - ./app/bot:/bot
+      - ./app:/app
 
-  
+  postgres:
+    image: postgres:latest
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - dev
 
-    
+
+volumes:
+  postgres_data:
