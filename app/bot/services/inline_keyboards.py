@@ -1,55 +1,50 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from database.models import IndividualSpecialists, IndividualServices, Massage
+from database.database import db
+from sqlmodel import select
 
-individual_specialists = [
-    "Алёна Атаманенко",
-    "Ольга Павленко",
-    "Юлия Андроник",
-    "Елена Грызунова",
-    "Вероника Быкова",
-    "Степуренко Валерия",
-    "Мастер-тренер",
-    "Анастасия Шевченко",
-]
+def get_items_from_db(session, model):
+    queru = select(model.id, model.name)
+    return [{"id": row.id, "name": row.name} for row in session.exec(queru)]
 
-individual_services = [
-    "Хатха йога",
-    "Здоровая спина"
-]
-
-group_specialists =[
-    "Анастасия Шевченко",
-    "Ольга Павленко",
-    "Юлия Андроник",
-    "Мастер-тренер",
-    "Алёна Атаманенко",
-    "Елена Грызунова"
-]
-
-group_services = [
-    "Йога критического выравнивания",
-    "Аэро-йога",
-    "Йога-терапия позвоночника",
-    "Йога для беременных",
-    "Здоровая спина",
-    "Йога. Культура движения",
-    "Детская аэро-йога",
-    "Хатха-йога для начинающих",
-    "Утренняя хатха для начинающих",
-    "FLY Йога в гамаках"
-]
-
-individual_specialists_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text=individual_specialist, callback_data=f"individual_specialist_{individual_specialist}")] for individual_specialist in individual_specialists
+def create_keyboard(items, callback_prefix):
+    return InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text=item["name"], callback_data=f"{callback_prefix}_{item['id']}")] for item in items
 ])
 
-individual_services_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text=individual_service, callback_data=f"individual_service_{individual_service}")] for individual_service in individual_services
-])
+def get_master_from_db(session, model, id):
+    query = select(model.id, model.name).where(model.id == id)
+    master = session.exec(query).first()
+    return [{"id": master.id, "name": master.name}]
 
-group_specialists_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text=group_specialist, callback_data=f"group_specialist_{group_specialist}")] for group_specialist in group_specialists
-])
+def generate_time_keyboard():
+    times = [
+        "9:00", "9:30", "10:00", "10:30", 
+        "11:00", "11:30", "12:00", "12:30", 
+        "13:00", "13:30", "14:00", "14:30", 
+        "15:00", "15:30", "16:00", "16:30", 
+        "17:00", "17:30", "18:00", "18:30", 
+        "19:00", "19:30", "20:00", "20:30"
+    ]
+    rows = [times[i:i + 4] for i in range(0, len(times), 4)]
+    inline_keyboard = [[InlineKeyboardButton(text=time, callback_data=f"time_{time}") for time in row] for row in rows]
 
-group_services_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text=group_service, callback_data=f"group_service_{group_service}")] for group_service in group_services
-])
+    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
+
+def generate_keyboards():
+    with next(db.get_session()) as session:
+        individual_specialists = get_items_from_db(session, IndividualSpecialists)
+        individual_services = get_items_from_db(session, IndividualServices)
+        massage_list = get_items_from_db(session, Massage)
+        massage_master = get_master_from_db(session, IndividualSpecialists, 1)
+
+        individual_specialists_keyboard = create_keyboard(individual_specialists, "individual_specialist")
+        individual_services_keyboard = create_keyboard(individual_services, "individual_services")
+        massage_list_keyboard = create_keyboard(massage_list, "massage_list")
+        massage_master_keyboard = create_keyboard(massage_master, "massage_master")
+        
+        return individual_specialists_keyboard, individual_services_keyboard, massage_list_keyboard, massage_master_keyboard
+    
+
+individual_specialists_keyboard, individual_services_keyboard, massage_list_keyboard, massage_master_keyboard = generate_keyboards()
+time_keyboard = generate_time_keyboard()
