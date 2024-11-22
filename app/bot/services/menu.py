@@ -7,15 +7,21 @@ buttons = [
     ["Мои записи"]
 ]
 
-menu_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
-    [KeyboardButton(text=button) for button in row] for row in buttons
-])
-
 individual_service_buttons = [
     ["Выбрать специалиста", "Выбрать дату и время"],
     ["Выбрать услуги", "Главное меню"]
 ]
 
-individual_service_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
-    [KeyboardButton(text=button) for button in row] for row in individual_service_buttons
+individual_types_buttons = [
+    ["Индивидуальные занятия", "Массажи"]
+]
+
+
+def create_keyboard(items):
+    return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[
+    [KeyboardButton(text=item) for item in row] for row in items
 ])
+
+menu_keyboard = create_keyboard(buttons)
+individual_service_keyboard = create_keyboard(individual_service_buttons)
+type_keyboard = create_keyboard(individual_types_buttons)
