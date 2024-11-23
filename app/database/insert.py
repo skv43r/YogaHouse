@@ -228,9 +228,9 @@ massage_data = [
 
 def insert_data():
     with next(db.get_session()) as session:
-        # for specialist in specialists_data:
-        #     specialist_entry = IndividualSpecialists(**specialist)
-        #     session.add(specialist_entry)
+        for specialist in specialists_data:
+            specialist_entry = IndividualSpecialists(**specialist)
+            session.add(specialist_entry)
 
         for service in services_data:
             service_entry = IndividualServices(**service)
